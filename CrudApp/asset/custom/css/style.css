@@ -6,15 +6,18 @@
 
 }
 body{
-    display: flex;
-    justify-content: center;
     align-items: center;
     height: 100vh;
     background-color: rgb(255 250 239 / 64%);
 }
+.title{
+    text-align: center;
+    margin: 50px 0;
+}
 .container{
     width: 90%;
     gap: 2rem;
+
 }
 .form{
     background-color: rgba(214, 214, 214, 0.645);
@@ -38,6 +41,12 @@ input,select{
     border: none;
     padding: 5px 15px;
     border-radius: 2px;
+}
+.search{
+    border: 1px solid #000;
+    width: 100%;
+    border-radius: 50px;
+    margin: 4px 0 20px;
 }
 select{
     width: 40%;
