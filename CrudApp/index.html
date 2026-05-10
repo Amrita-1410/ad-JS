@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="asset/custom/css/style.css"/>
 </head>
 <body>
-    <div class="container d-flex justify-content-between align-items-center m-1">
+    <h3 class="title">Crud Application</h3>
+    <div class="d-flex justify-content-center">
+    <div class="container d-flex m-1">
+        
         <div class="col-4 form">
             <form autocomplete="off">
                 <div>
@@ -35,6 +38,8 @@
             </form>
         </div>
         <div class="col-6">
+            <input class="search" type="text" id="searchInput" placeholder="Search..." onkeyup="searchProducts()">
+            
             <table class="list" id="studentlist">
                 <thead>
                     <th>Full name</th>
@@ -48,6 +53,7 @@
 
             </table>
         </div>
+    </div>
     </div>
     <script src="asset/custom/js/script.js"></script>
 </body>
