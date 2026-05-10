@@ -1,96 +1,159 @@
-// Wait for the DOM to be fully loaded
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
+
     const fullname = document.getElementById("fullname");
     const Scode = document.getElementById("scode");
     const course = document.getElementById("course");
-    const studentlist = document.getElementById("studentlist").querySelector("tbody");
+
+    const studentlist = document
+        .getElementById("studentlist")
+        .querySelector("tbody");
 
     const form = document.querySelector("form");
 
     let selectedRow = null;
 
-    // Attach the submit event listener to the form
-    form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        onFormSubmit();
-    });
+    // Load saved students
+    displayStudents();
 
-    const onFormSubmit = () => {
-        if (!fullname.value.trim() || !Scode.value.trim() || !course.value.trim()) {
-            alert("Please fill the fields");
+    // FORM SUBMIT
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (
+            fullname.value.trim() === "" ||
+            Scode.value.trim() === "" ||
+            course.value.trim() === ""
+        ) {
+            alert("Please fill all fields");
             return;
         }
-        const formData = readFormData();
 
-        if (selectedRow === null) {
-            insertData(formData);
-        } else {
-            updateData(formData);
-        }
-        resetForm();
-    };
-
-    const readFormData = () => {
-        return {
+        const studentData = {
             fullname: fullname.value.trim(),
             Scode: Scode.value.trim(),
             course: course.value.trim(),
         };
-    };
 
-    const insertData = (data) => {
-        const newRow = studentlist.insertRow();
+        if (selectedRow == null) {
+            addStudent(studentData);
+        } else {
+            updateStudent(studentData);
+        }
 
-        let cell1 = newRow.insertCell(0);
-        cell1.innerHTML = data.fullname;
+        resetForm();
+    });
 
-        let cell2 = newRow.insertCell(1);
-        cell2.innerHTML = data.Scode;
+    // ADD STUDENT
+    function addStudent(data) {
 
-        let cell3 = newRow.insertCell(2);  // Fixed to insert into the correct cell
-        cell3.innerHTML = data.course;  // Fixed the mistake of inserting into cell2
+        let students = JSON.parse(localStorage.getItem("students")) || [];
 
-        let cell4 = newRow.insertCell(3);
+        students.push(data);
 
-        const editBtn = document.createElement("span");
-        editBtn.textContent = "Edit";
-        editBtn.classList.add("btn");
-        editBtn.addEventListener("click", () => onEdit(newRow));  // Passed row instead of td
+        localStorage.setItem("students", JSON.stringify(students));
 
-        const deleteBtn = document.createElement("span");
-        deleteBtn.textContent = "Delete";  // Fixed: text should be for the delete button
-        deleteBtn.classList.add("btn","d-btn");
-        deleteBtn.addEventListener("click", () => onDelete(newRow));  // Passed row instead of td
+        displayStudents();
+    }
 
-        cell4.appendChild(editBtn);
-        cell4.appendChild(deleteBtn);
-    };
+    // DISPLAY STUDENTS
+    function displayStudents(filteredStudents = null) {
 
-    const resetForm = () => {
+
+        studentlist.innerHTML = "";
+
+        let students =filteredStudents ||JSON.parse(localStorage.getItem("students")) ||[];
+     if(products.length === 0){
+        let row = `
+            <tr>
+                 <td colspan="5" style="text-align:center; color:red; font-size:18px;">
+                    No Data Found
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML = row;
+        return;
+     }
+        students.forEach((student, index) => {
+
+            const row = studentlist.insertRow();
+
+            row.insertCell(0).textContent = student.fullname;
+            row.insertCell(1).textContent = student.Scode;
+            row.insertCell(2).textContent = student.course;
+
+            let actionCell = row.insertCell(3);
+
+            // EDIT BUTTON
+            const editBtn = document.createElement("span");
+            editBtn.textContent = "Edit";
+            editBtn.classList.add("btn");
+            editBtn.addEventListener("click", () => onEdit(newRow));  // Passed row instead of td
+
+            const deleteBtn = document.createElement("span");
+            deleteBtn.textContent = "Delete";  // Fixed: text should be for the delete button
+            deleteBtn.classList.add("btn","d-btn");
+            deleteBtn.addEventListener("click", () => onDelete(newRow)); 
+
+            actionCell.appendChild(editBtn);
+            actionCell.appendChild(deleteBtn);
+        });
+    }
+
+    // EDIT
+    function onEdit(index) {
+
+        let students = JSON.parse(localStorage.getItem("students")) || [];
+
+        selectedRow = index;
+
+        fullname.value = students[index].fullname;
+        Scode.value = students[index].Scode;
+        course.value = students[index].course;
+    }
+
+    // UPDATE
+    function updateStudent(data) {
+
+        let students = JSON.parse(localStorage.getItem("students")) || [];
+        students[selectedRow] = data;
+        localStorage.setItem("students", JSON.stringify(students));
+        selectedRow = null;
+
+        displayStudents();
+    }
+
+    // DELETE
+    function onDelete(index) {
+
+        if (confirm("Are you sure?")) {
+
+            let students = JSON.parse(localStorage.getItem("students")) || [];
+
+            students.splice(index, 1);
+            localStorage.setItem("students", JSON.stringify(students));
+            displayStudents();
+            resetForm();
+        }
+    }
+
+    // RESET FORM
+    function resetForm() {
         fullname.value = "";
         Scode.value = "";
         course.value = "";
-        selectedRow = null;
-    };
+    }
 
-    const onEdit = (row) => {
-        selectedRow = row;
-        fullname.value = selectedRow.cells[0].textContent;
-        Scode.value = selectedRow.cells[1].textContent;
-        course.value = selectedRow.cells[2].textContent;
-    };
+    // SEARCH
+    document.getElementById("searchInput").addEventListener("keyup", searchStudents);
 
-    const updateData = (formData) => {
-        selectedRow.cells[0].textContent = formData.fullname;
-        selectedRow.cells[1].textContent = formData.Scode;
-        selectedRow.cells[2].textContent = formData.course;
-        selectedRow = null;
-    };
+    function searchStudents() {
+        let value = document.getElementById("searchInput").value.toLowerCase();
+        let students =JSON.parse(localStorage.getItem("students")) || [];
 
-    const onDelete = (row) => {
-        if (confirm("Are you sure?")) {
-            row.remove();
-            resetForm();
-        }
-    };
+        let filtered = students.filter(student => student.fullname.toLowerCase().includes(value) ||
+            student.Scode.toLowerCase().includes(value) ||student.course.toLowerCase().includes(value));
+
+        displayStudents(filtered);
+    }
+
 });
